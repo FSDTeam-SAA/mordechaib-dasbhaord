@@ -1,13 +1,9 @@
-import OverviewCards from "./_components/OverviewCards";
-import PlatformActivity from "./_components/PlatformActivity";
-import RecentApplication from "./_components/RecentApplication";
+import React from 'react'
 
-export default function DashboardPage() {
+function page() {
   return (
-    <div className="min-h-[calc(100vh-148px)] space-y-5">
-      <OverviewCards />
-      <PlatformActivity />
-      <RecentApplication />
-    </div>
-  );
+    <div>page</div>
+  )
 }
+
+export default page

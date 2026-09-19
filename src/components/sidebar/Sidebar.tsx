@@ -4,20 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Binoculars,
   CalendarRange,
   ClipboardPenLine,
-  FolderRoot,
   GraduationCap,
-  HousePlus,
   LayoutDashboard,
   LogOut,
   MapPin,
-  MapPinned,
-  Newspaper,
   Plane,
-  Settings,
-  StickyNote,
   UserRound,
   X,
 } from "lucide-react";
@@ -43,7 +36,7 @@ const navigation = [
     icon: GraduationCap,
   },
   {
-    name: "Tour Booking",
+    name: "Tour Booking",                    
     href: "/tour-booking",
     icon: MapPin,
   },
@@ -51,46 +44,6 @@ const navigation = [
     name: "Consultation",
     href: "/consultation",
     icon: CalendarRange,
-  },
-  {
-    name: "Countries",
-    href: "/countries",
-    icon: MapPinned,
-  },
-  {
-    name: "Visa Types",
-    href: "/visa-types",
-    icon: StickyNote,
-  },
-  {
-    name: "Universities ",
-    href: "/universities",
-    icon: HousePlus,
-  },
-  {
-    name: "Programs",
-    href: "/programs",
-    icon: ClipboardPenLine,
-  },
-  {
-    name: "Tour Packages",
-    href: "/tour-packages",
-    icon: Binoculars,
-  },
-  {
-    name: "Blog Management",
-    href: "/blog-management",
-    icon: FolderRoot,
-  },
-  {
-    name: "Newsletter",
-    href: "/newsletter",
-    icon: Newspaper,
-  },
-  {
-    name: "Settings",
-    href: "/settings",
-    icon: Settings,
   },
 ];
 
