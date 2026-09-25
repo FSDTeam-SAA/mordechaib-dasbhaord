@@ -11,6 +11,16 @@ export const pageConfig: Record<
       "Welcome back! Here's what's happening in valoura travel today.",
   },
 
+  "/subscription": {
+    title: "Subscription",
+    description: "Manage pricing tiers, subscription plans, and billing.",
+  },
+
+  "/organizations": {
+    title: "Organizations",
+    description: "Manage your organizations, plans, and account status.",
+  },
+
   "/add-application": {
     title: "Add Application",
     description: "Complete the bookkeeper application and skills assessment",
@@ -136,6 +146,9 @@ export const pageConfig: Record<
 };
 
 export const getPageConfig = (pathname: string) => {
+  if (pathname.startsWith("/organizations/")) {
+    return { title: "Organization Details", description: "Company information, subscription, and connected tools." };
+  }
   if (pathname.startsWith("/applications/")) {
     return { title: "Skill Assessment", description: "Review the application assessment section by section" };
   }
