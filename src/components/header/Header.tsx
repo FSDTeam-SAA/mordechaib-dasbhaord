@@ -18,7 +18,7 @@ interface HeaderProps {
 
 export default function Header({ setSidebarOpen, sidebarCollapsed, onExpandSidebar }: HeaderProps) {
   const pathname = usePathname();
-  const [panel, setPanel] = useState<"search" | null>(null);
+  const [panel, setPanel] = useState<"search" | "account" | null>(null);
   const [query, setQuery] = useState("");
   const actionsRef = useRef<HTMLDivElement>(null);
 
@@ -100,7 +100,7 @@ export default function Header({ setSidebarOpen, sidebarCollapsed, onExpandSideb
           <Search className="h-[18px] w-[18px]" />
         </button>
         <Notifications buttonClassName={actionClass} onOpen={() => setPanel(null)} />
-        {panel && (
+        {panel === "search" && (
           <section id="header-search" aria-label="Search pages" className="absolute right-0 top-full mt-3 w-[min(340px,calc(100vw-24px))] rounded-xl border border-slate-200 bg-white p-4 text-slate-800 shadow-xl">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold">Search pages</h2>
@@ -115,8 +115,18 @@ export default function Header({ setSidebarOpen, sidebarCollapsed, onExpandSideb
             </>
           </section>
         )}
-        <div
-          className="flex h-10 items-center py-1 gap-2 rounded-md border border-[#E3E6F2] bg-[#F7F8FF] px-1.5 sm:px-2.5 text-[#20243B]"
+        {panel === "account" && (
+          <div id="account-panel" className="absolute right-0 top-full mt-3 w-52 rounded-xl border border-slate-200 bg-white p-2 text-slate-800 shadow-xl">
+            <Link href="/change-password" onClick={() => setPanel(null)} className="block rounded-md px-3 py-2 text-sm hover:bg-fuchsia-50 hover:text-fuchsia-600">Change Password</Link>
+          </div>
+        )}
+        <button
+          type="button"
+          aria-label="Account settings"
+          aria-expanded={panel === "account"}
+          aria-controls="account-panel"
+          onClick={() => setPanel(panel === "account" ? null : "account")}
+          className="flex h-10 cursor-pointer items-center py-1 gap-2 rounded-md border border-[#E3E6F2] bg-[#F7F8FF] px-1.5 sm:px-2.5 text-[#20243B]"
 
         >
           <Avatar className="h-7 w-7 rounded-md">
@@ -130,7 +140,7 @@ export default function Header({ setSidebarOpen, sidebarCollapsed, onExpandSideb
             <p className="truncate text-[10px] text-slate-500">{email || "Administrator"}</p>
           </div>
           <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-slate-500" />
-        </div>
+        </button>
       </div>
     </div>
   );

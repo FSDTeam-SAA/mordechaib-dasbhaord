@@ -11,6 +11,11 @@ export const pageConfig: Record<
       "Welcome back! Here's what's happening in valoura travel today.",
   },
 
+  "/role-permission": {
+    title: "Role & Permission",
+    description: "Manage admin roles, permissions, and login activity.",
+  },
+
   "/subscription": {
     title: "Subscription",
     description: "Manage pricing tiers, subscription plans, and billing.",

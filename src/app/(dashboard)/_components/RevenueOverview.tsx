@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useSubscriptionQuery } from "@/hooks/use-subscription-query";
+import { usd, percent, type RevenueOverviewData } from "@/lib/subscription-api";
+import SubscriptionQueryState from "./SubscriptionQueryState";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card } from "@/components/ui/card";
 import {
@@ -16,33 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const monthly = [
-  { period: "Jan", revenue: 0 },
-  { period: "", revenue: 9200 },
-  { period: "", revenue: 8700 },
-  { period: "Feb", revenue: 18500 },
-  { period: "", revenue: 17200 },
-  { period: "", revenue: 22000 },
-  { period: "Mar", revenue: 16200 },
-  { period: "", revenue: 20000 },
-  { period: "", revenue: 19500 },
-  { period: "Apr", revenue: 18700 },
-  { period: "", revenue: 28500 },
-  { period: "", revenue: 30000 },
-  { period: "May", revenue: 35500 },
-  { period: "", revenue: 39000 },
-  { period: "Jun", revenue: 47000 },
-  { period: "", revenue: 48291 },
-];
-const quarterly = [
-  { period: "Q1", revenue: 17200 },
-  { period: "Q2", revenue: 26000 },
-  { period: "Q3", revenue: 35500 },
-  { period: "Q4", revenue: 48291 },
-];
-
 export default function RevenueOverview() {
-  const [period, setPeriod] = useState("monthly");
+  const currentYear = new Date().getUTCFullYear();
+  const [year, setYear] = useState(String(currentYear));
+  const query = useSubscriptionQuery<RevenueOverviewData>(["analytics", "revenue", year], `/subscription-analytics/revenue-overview?year=${year}`);
+  const data = query.data;
   return (
     <Card className="min-w-0 gap-0 rounded-xl border-0 bg-white p-5 shadow-none">
       <div className="flex items-start justify-between gap-2 border-b border-[#EFF1FA] pb-3">
@@ -51,27 +32,26 @@ export default function RevenueOverview() {
             Revenue Overview
           </h2>
           <p className="mt-0.5 text-[10px] text-[#929AC0]">
-            Estimated money saved overtime
+            Monthly recurring revenue
           </p>
         </div>
-        <Select value={period} onValueChange={setPeriod}>
+        <Select value={year} onValueChange={setYear}>
           <SelectTrigger
-            aria-label="Revenue period"
+            aria-label="Revenue year"
             className="h-7! border-0 bg-[#F5F6FF] px-2 text-xs text-[#85889B] shadow-none"
           >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="monthly">Monthly</SelectItem>
-            <SelectItem value="quarterly">Quarterly</SelectItem>
+            {Array.from({ length: 6 }, (_, index) => String(currentYear - index)).map(value => <SelectItem key={value} value={value}>{value}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
       <div className="flex gap-5 py-3">
         {[
-          { value: "$48,291", label: "MRR", color: "text-[#597AFF]" },
-          { value: "$579,492", label: "ARR", color: "text-[#D94BDB]" },
-          { value: "+23%", label: "Growth", color: "text-[#0BBC89]" },
+          { value: data ? usd(data.totals.mrrUsd) : "—", label: "MRR", color: "text-[#597AFF]" },
+          { value: data ? usd(data.totals.arrUsd) : "—", label: "ARR", color: "text-[#D94BDB]" },
+          { value: data ? percent(data.totals.growthPercent) : "—", label: "Growth", color: "text-[#0BBC89]" },
         ].map((metric) => (
           <div key={metric.label}>
             <p className={`text-sm font-semibold ${metric.color}`}>
@@ -81,18 +61,18 @@ export default function RevenueOverview() {
           </div>
         ))}
       </div>
-      <ChartContainer
-        config={{ revenue: { label: "Revenue", color: "#0BBC89" } }}
+      {query.error || query.isPending ? <SubscriptionQueryState error={query.error} retry={() => void query.refetch()} /> : <ChartContainer
+        config={{ mrrUsd: { label: "MRR (USD)", color: "#0BBC89" } }}
         className="h-[190px] w-full aspect-auto [&_.recharts-cartesian-axis-tick_text]:fill-[#939CC5]"
       >
         <AreaChart
           accessibilityLayer
-          data={period === "monthly" ? monthly : quarterly}
+          data={data?.series ?? []}
           margin={{ top: 5, right: 0, left: -20, bottom: 0 }}
         >
           <CartesianGrid vertical={false} stroke="#F2F4FB" />
           <XAxis
-            dataKey="period"
+            dataKey="month"
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 10 }}
@@ -103,13 +83,12 @@ export default function RevenueOverview() {
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 10 }}
-            ticks={[0, 10000, 20000, 30000, 48000]}
-            domain={[0, 50000]}
+            domain={[0, "auto"]}
           />
           <ChartTooltip content={<ChartTooltipContent hideLabel />} />
           <Area
             type="monotone"
-            dataKey="revenue"
+            dataKey="mrrUsd"
             stroke="#0BBC89"
             strokeWidth={1.3}
             fill="#0BBC89"
@@ -119,7 +98,7 @@ export default function RevenueOverview() {
             isAnimationActive={false}
           />
         </AreaChart>
-      </ChartContainer>
+      </ChartContainer>}
     </Card>
   );
 }

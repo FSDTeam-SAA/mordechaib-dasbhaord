@@ -10,16 +10,19 @@ import PasswordField from "../../_components/PasswordField";
 export default function SignInForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (isLoading) return;
     setIsLoading(true);
     try {
       const result = await signIn("credentials", {
-        email,
+        email: email.trim(),
         password,
         redirect: false,
+        rememberMe,
       });
       if (!result || result.error || !result.ok)
         throw new Error(
@@ -62,7 +65,7 @@ export default function SignInForm() {
         />
         <div className="auth-options">
           <label className="auth-remember">
-            <input type="checkbox" name="rememberMe" />
+            <input type="checkbox" name="rememberMe" checked={rememberMe} onChange={event => setRememberMe(event.target.checked)} />
             Remember me
           </label>
           <Link href="/forgot-password">Forgot Password?</Link>

@@ -1,17 +1,31 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextAuthOptions } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { authRequest } from "./auth-api";
+
+type LoginResponse = {
+  success: boolean;
+  message: string;
+  data?: {
+    user?: {
+      id: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+      role: string;
+      avatarUrl?: string;
+    };
+    refreshToken?: string;
+    accessToken?: string;
+  };
+};
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-  },
+  pages: { signIn: "/signin" },
+  session: { strategy: "jwt", maxAge: 7 * 24 * 60 * 60 },
   cookies: {
     sessionToken: {
-      name: "next-auth.session-token-delivaryboy", // 🔹 আলাদা কুকি নাম
+      name: "next-auth.session-token-delivaryboy",
       options: {
         httpOnly: true,
         sameSite: "lax",
@@ -24,82 +38,61 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text", placeholder: "email" },
-        password: { label: "Password", type: "password", placeholder: "password" },
+        email: { label: "Email", type: "email" },
+        rememberMe: { label: "Remember me", type: "checkbox" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Please enter your email and password");
-        }
-
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/user/signin`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: credentials.email,
-                password: credentials.password,
-              }),
-            }
-          );
-
-          const response = await res.json();
-          console.log("Backend login response:", response);
-
-          if (!res.ok || !response?.success) {
-            throw new Error(response?.message || "Login failed");
-          }
-
-          const user = response.data?.user || response.data;
-          if (!user) throw new Error("User data not found");
-
-          if (user.role !== "deliveryboy") {
-            throw new Error("Only Seller users can access this dashboard");
-          }
-
-          const accessToken = response.data?.accessToken || response.accessToken || null;
-
-          return {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            phoneNumber: user.phoneNumber || null,
-            role: user.role,
-            profileImage: user.profileImage || null,
-            accessToken,
-          };
-        } catch (error) {
-          console.error("Authentication error:", error);
-          const message =
-            error instanceof Error ? error.message : "Authentication failed";
-          throw new Error(message);
-        }
+        if (!credentials?.email?.trim() || !credentials.password)
+          throw new Error("Please enter your email and password.");
+        const response = await authRequest<LoginResponse>("/auth/login", {
+          email: credentials.email.trim(),
+          password: credentials.password,
+          rememberMe: credentials.rememberMe === "true",
+        });
+        if (response.success !== true)
+          throw new Error(response.message || "Login failed.");
+        const user = response.data?.user;
+        const accessToken = response.data?.accessToken;
+        if (!user?.id || !user.email || !user.role || !accessToken)
+          throw new Error("Invalid login response from the server.");
+        return {
+          id: user.id,
+          name:
+            [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+            user.email.split("@")[0],
+          email: user.email,
+          role: user.role,
+          image: user.avatarUrl || null,
+          profileImage: user.avatarUrl || null,
+          accessToken,
+          refreshToken: response.data?.refreshToken,
+        };
       },
     }),
   ],
-
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: any }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
-        token.phoneNumber = user.phoneNumber;
         token.role = user.role;
         token.profileImage = user.profileImage;
         token.accessToken = user.accessToken;
+        // Keep the refresh token in NextAuth's encrypted HTTP-only JWT cookie.
+        token.refreshToken = user.refreshToken;
       }
       return token;
     },
-
-    async session({ session, token }: { session: any; token: JWT }) {
+    async session({ session, token }) {
+      session.accessToken = token.accessToken;
       session.user = {
+        ...session.user,
         id: token.id,
         name: token.name,
         email: token.email,
-        phoneNumber: token.phoneNumber,
+        image: token.profileImage,
         role: token.role,
         profileImage: token.profileImage,
         accessToken: token.accessToken,

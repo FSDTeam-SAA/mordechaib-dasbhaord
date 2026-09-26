@@ -9,14 +9,17 @@ import {
   ChevronsLeft,
   LayoutDashboard,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import Image from "next/image";
-import { signOut } from "next-auth/react";
+import { useState } from "react";
+import LogoutModal from "./LogoutModal";
 
 export const navigation = [
   { name: "Dashboard Overview", href: "/", icon: LayoutDashboard },
   { name: "Organizations", href: "/organizations", icon: Building2 },
   { name: "Subscription", href: "/subscription", icon: CreditCard },
+  { name: "Role & Permission", href: "/role-permission", icon: ShieldCheck },
 
 ];
 
@@ -29,6 +32,7 @@ interface SidebarProps {
 
 export function Sidebar({ open, setOpen, collapsed, onCollapse }: SidebarProps) {
   const pathname = usePathname();
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   return (
     <>
@@ -115,7 +119,7 @@ export function Sidebar({ open, setOpen, collapsed, onCollapse }: SidebarProps) 
         <div className="mt-auto shrink-0 px-[14px] pb-5 pt-3">
           <button
             type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => setLogoutOpen(true)}
             className="group flex h-10 w-full items-center gap-2 rounded-[5px] px-3 text-[14px] font-normal text-[#EF4444] cursor-pointer transition-colors duration-150 hover:bg-red-500/10 hover:text-red-400"
           >
             <LogOut strokeWidth={1.5} className="h-4 w-4 shrink-0" />
@@ -123,6 +127,7 @@ export function Sidebar({ open, setOpen, collapsed, onCollapse }: SidebarProps) 
           </button>
         </div>
       </div>
+      <LogoutModal open={logoutOpen} onOpenChange={setLogoutOpen} />
     </>
   );
 }

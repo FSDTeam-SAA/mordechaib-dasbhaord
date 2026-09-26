@@ -1,5 +1,8 @@
 "use client";
 
+import { useSubscriptionQuery } from "@/hooks/use-subscription-query";
+import { percent, usd, type PlanDistribution } from "@/lib/subscription-api";
+import SubscriptionQueryState from "./SubscriptionQueryState";
 import { ChevronRight } from "lucide-react";
 import { Cell, Pie, PieChart } from "recharts";
 import { Card } from "@/components/ui/card";
@@ -18,31 +21,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-const plans = [
-  {
-    name: "Starter",
-    value: 200,
-    color: "#0DBA87",
-    text: "text-[#0DBA87]",
-    dot: "bg-[#0DBA87]",
-  },
-  {
-    name: "Growth",
-    value: 52,
-    color: "#5D7BF5",
-    text: "text-[#5D7BF5]",
-    dot: "bg-[#5D7BF5]",
-  },
-  {
-    name: "Enterprise",
-    value: 208,
-    color: "#CD4ACF",
-    text: "text-[#F3A000]",
-    dot: "bg-[#F3A000]",
-  },
-];
-
 export default function SubscriptionOverview({ title = "Subscription Overview" }: { title?: string }) {
+  const query = useSubscriptionQuery<PlanDistribution>(["analytics", "distribution"], "/subscription-analytics/plan-distribution");
+  const data = query.data;
+  const colors = ["#0DBA87", "#5D7BF5", "#CD4ACF", "#F3A000"];
+  const plans = (data?.distribution ?? []).map((plan, index) => ({ ...plan, value: plan.count, color: colors[index % colors.length], text: "text-[#737D95]" }));
   return (
     <Card className="min-w-0 gap-0 rounded-xl border-0 bg-white p-5 shadow-none">
       <div className="flex items-center justify-between gap-2 border-b border-[#EFF1FA] pb-3">
@@ -63,13 +46,13 @@ export default function SubscriptionOverview({ title = "Subscription Overview" }
             <DialogHeader>
               <DialogTitle>Subscription overview</DialogTitle>
               <DialogDescription>
-                Sample subscription breakdown across 460 accounts.
+                {data?.totalSubscriptions ?? 0} total subscriptions.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
               {plans.map((plan) => (
                 <div
-                  key={plan.name}
+                  key={plan.planId}
                   className="flex justify-between rounded-lg bg-[#F5F6FF] p-3 text-sm"
                 >
                   <span>{plan.name}</span>
@@ -80,7 +63,7 @@ export default function SubscriptionOverview({ title = "Subscription Overview" }
           </DialogContent>
         </Dialog>
       </div>
-      <div className="flex flex-1 items-center gap-3 py-4 min-[1400px]:gap-6">
+      {query.error || query.isPending ? <SubscriptionQueryState error={query.error} retry={() => void query.refetch()} /> : <div className="flex flex-1 items-center gap-3 py-4 min-[1400px]:gap-6">
         <div className="relative w-[44%] shrink-0">
           <ChartContainer
             config={{ value: { label: "Subscriptions" } }}
@@ -103,44 +86,46 @@ export default function SubscriptionOverview({ title = "Subscription Overview" }
                 isAnimationActive={false}
               >
                 {plans.map((plan) => (
-                  <Cell key={plan.name} fill={plan.color} />
+                  <Cell key={plan.planId} fill={plan.color} />
                 ))}
               </Pie>
             </PieChart>
           </ChartContainer>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-lg font-semibold text-[#171C35]">460</span>
+            <span className="text-lg font-semibold text-[#171C35]">{data?.totalSubscriptions ?? "—"}</span>
             <span className="text-[10px] text-[#929AC0]">Total</span>
           </div>
         </div>
         <div className="min-w-0 flex-1 space-y-5">
           {plans.map((plan) => (
             <div
-              key={plan.name}
+              key={plan.planId}
               className="grid grid-cols-[1fr_auto_auto] items-center gap-3 text-[11px]"
             >
               <span className="flex items-center gap-1 text-[#30334C]">
                 <span
-                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${plan.dot}`}
+                  className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: plan.color }}
                 />
                 {plan.name}
               </span>
               <span className={plan.text}>{plan.value}</span>
               <span className={plan.text}>
-                {Math.round((plan.value / 460) * 100)}%
+                {plan.percent}%
               </span>
             </div>
           ))}
         </div>
       </div>
+      }
+      {data && data.distribution.length === 0 && <p className="pb-3 text-xs text-[#929AC0]">No plan distribution available.</p>}
       <div className="mt-auto border-t border-[#EFF1FA] pt-3">
         <div className="flex justify-between rounded-md bg-[#F5F6FF] p-2.5">
           <div>
-            <p className="text-sm font-semibold text-[#597AFF]">$48,291</p>
+            <p className="text-sm font-semibold text-[#597AFF]">{data ? usd(data.totalMrrUsd) : "—"}</p>
             <p className="text-[10px] text-[#929AC0]">Total MRR</p>
           </div>
           <div className="text-right">
-            <p className="text-sm font-semibold text-[#0BBC89]">+23%</p>
+            <p className="text-sm font-semibold text-[#0BBC89]">{data ? percent(data.mrrChangePercentVsLastMonth) : "—"}</p>
             <p className="text-[10px] text-[#929AC0]">Growth</p>
           </div>
         </div>

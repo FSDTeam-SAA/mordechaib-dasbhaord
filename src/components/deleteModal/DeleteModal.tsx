@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,17 +15,21 @@ interface DeleteModalProps {
 }
 
 export default function DeleteModal({ open, onOpenChange, onConfirm, title = "Delete user?", description = "Are you sure you want to delete this user? This action cannot be undone.", confirmLabel = "Delete" }: DeleteModalProps) {
+  const inFlight = useRef(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   async function confirm() {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setPending(true);
     setError("");
     try {
       await onConfirm();
       onOpenChange(false);
-    } catch {
-      setError("Could not delete this item. Please try again.");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Could not delete this item. Please try again.");
     } finally {
+      inFlight.current = false;
       setPending(false);
     }
   }
