@@ -120,10 +120,10 @@ export function Sidebar({ open, setOpen, collapsed, onCollapse }: SidebarProps) 
           <button
             type="button"
             onClick={() => setLogoutOpen(true)}
-            className="group flex h-10 w-full items-center gap-2 rounded-[5px] px-3 text-[14px] font-normal text-[#EF4444] cursor-pointer transition-colors duration-150 hover:bg-red-500/10 hover:text-red-400"
+            className="group flex h-10 w-full items-center gap-2 rounded-[5px] px-3 text-[16px] leading-5 font-semibold text-[#EF4444] cursor-pointer transition-colors duration-150 hover:bg-red-500/10 hover:text-red-400"
           >
             <LogOut strokeWidth={1.5} className="h-4 w-4 shrink-0" />
-            <span className="text-sm">Log Out</span>
+            <span className="whitespace-nowrap font-semibold">Log Out</span>
           </button>
         </div>
       </div>

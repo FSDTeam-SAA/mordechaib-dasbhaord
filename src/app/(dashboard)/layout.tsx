@@ -1,12 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/header/Header";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 
 function Layout({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const authenticated = status === "authenticated" && Boolean(session?.accessToken);
+  useEffect(() => {
+    if (status !== "loading" && !authenticated) router.replace("/signin");
+  }, [status, authenticated, router]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  if (!authenticated) return null;
 
   return (
     <>

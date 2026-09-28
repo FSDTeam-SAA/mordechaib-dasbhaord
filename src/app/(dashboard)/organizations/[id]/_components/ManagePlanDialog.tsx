@@ -17,19 +17,21 @@ const plans: { name: Plan; price: number }[] = [
 
 export default function ManagePlanDialog({ companyName, currentPlan, billingCycle, onApply }: {
   companyName: string;
-  currentPlan: Plan;
-  billingCycle: BillingCycle;
+  currentPlan: string;
+  billingCycle: string;
   onApply: (plan: Plan, billing: BillingCycle) => void;
 }) {
+  const initialPlan: Plan = currentPlan === "Growth" || currentPlan === "Enterprise" ? currentPlan : "Growth";
+  const initialBilling: BillingCycle = billingCycle === "Yearly" ? "Yearly" : "Monthly";
   const [open, setOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Plan>(currentPlan === "Starter" ? "Growth" : currentPlan);
-  const [billing, setBilling] = useState<BillingCycle>(billingCycle);
+  const [selectedPlan, setSelectedPlan] = useState<Plan>(initialPlan);
+  const [billing, setBilling] = useState<BillingCycle>(initialBilling);
   const unchanged = selectedPlan === currentPlan && billing === billingCycle;
 
   function handleOpen(next: boolean) {
     if (next) {
-      setSelectedPlan(currentPlan === "Starter" ? "Growth" : currentPlan);
-      setBilling(billingCycle);
+      setSelectedPlan(initialPlan);
+      setBilling(initialBilling);
     }
     setOpen(next);
   }
