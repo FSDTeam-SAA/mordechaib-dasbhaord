@@ -72,7 +72,7 @@ export function Sidebar({ open, setOpen, collapsed, onCollapse }: SidebarProps) 
                 priority
               />
             </span>
-            <span className="text-[18px] font-semibold tracking-tight text-white">Noitra.ai</span>
+            <span className="text-[18px] font-semibold tracking-tight text-white">Noltra.ai</span>
           </Link>
           <button type="button" onClick={onCollapse} aria-label="Collapse sidebar" aria-expanded={true} aria-controls="dashboard-sidebar" title="Collapse sidebar" className="hidden h-8 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-white/15 text-white hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-white lg:flex">
             <ChevronsLeft className="h-5 w-5" />
