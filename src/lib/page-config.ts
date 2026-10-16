@@ -25,6 +25,10 @@ export const pageConfig: Record<
     title: "Organizations",
     description: "Manage your organizations, plans, and account status.",
   },
+  "/diagnostics-managment": {
+    title: "Diagnostics Management",
+    description: "Manage assessment categories, questions, and results.",
+  },
 
   "/add-application": {
     title: "Add Application",
@@ -153,6 +157,9 @@ export const pageConfig: Record<
 export const getPageConfig = (pathname: string) => {
   if (pathname.startsWith("/organizations/")) {
     return { title: "Organization Details", description: "Company information, subscription, and connected tools." };
+  }
+  if (pathname.startsWith("/diagnostics-managment/results/")) {
+    return { title: "Assessment Details", description: "Review diagnostic responses and performance." };
   }
   if (pathname.startsWith("/applications/")) {
     return { title: "Skill Assessment", description: "Review the application assessment section by section" };

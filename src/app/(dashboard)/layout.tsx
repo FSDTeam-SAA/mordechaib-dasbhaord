@@ -20,12 +20,12 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Header setSidebarOpen={setSidebarOpen} sidebarCollapsed={sidebarCollapsed} onExpandSidebar={() => setSidebarCollapsed(false)} />
+      <Header setSidebarOpen={setSidebarOpen} sidebarCollapsed={sidebarCollapsed} />
 
       <div className="flex">
         <Sidebar
           collapsed={sidebarCollapsed}
-          onCollapse={() => setSidebarCollapsed(true)}
+          onToggleCollapse={() => setSidebarCollapsed((current) => !current)}
           open={sidebarOpen}
           setOpen={setSidebarOpen}
         />
