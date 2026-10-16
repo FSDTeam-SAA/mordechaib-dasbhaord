@@ -5,18 +5,17 @@ import Link from "next/link";
 import { navigation } from "@/components/sidebar/Sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
-import { ChevronDown, ChevronsRight, Download, Menu, Search, X } from "lucide-react";
+import { ChevronDown, Download, Menu, Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { getPageConfig } from "@/lib/page-config";
 import Notifications from "./Notifications";
 
 interface HeaderProps {
   sidebarCollapsed: boolean;
-  onExpandSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
 }
 
-export default function Header({ setSidebarOpen, sidebarCollapsed, onExpandSidebar }: HeaderProps) {
+export default function Header({ setSidebarOpen, sidebarCollapsed }: HeaderProps) {
   const pathname = usePathname();
   const [panel, setPanel] = useState<"search" | "account" | null>(null);
   const [query, setQuery] = useState("");
@@ -61,7 +60,7 @@ export default function Header({ setSidebarOpen, sidebarCollapsed, onExpandSideb
   ).toUpperCase();
 
   return (
-    <div className={`fixed top-0 right-[var(--removed-body-scroll-bar-size,0px)] left-0 z-30 h-[76px] flex items-center justify-between gap-3 px-3 md:px-5 isolate bg-[#030812] text-white border-b border-white/15 ${sidebarCollapsed ? "lg:left-0" : "lg:left-[240px]"}`}>
+    <div className={`fixed top-0 right-[var(--removed-body-scroll-bar-size,0px)] left-0 z-30 h-[76px] flex items-center justify-between gap-3 px-3 md:px-5 isolate bg-[#030812] text-white border-b border-white/15 transition-[left] duration-300 ${sidebarCollapsed ? "lg:left-[88px]" : "lg:left-[280px]"}`}>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <video autoPlay loop muted playsInline className="h-full w-full object-cover">
           <source src="/images/header_video.mp4" type="video/mp4" />
@@ -74,11 +73,6 @@ export default function Header({ setSidebarOpen, sidebarCollapsed, onExpandSideb
           <Menu className="w-6 h-6" />
         </button>
 
-        {sidebarCollapsed && (
-          <button type="button" onClick={onExpandSidebar} aria-label="Expand sidebar" aria-expanded={false} aria-controls="dashboard-sidebar" title="Expand sidebar" className="hidden h-8 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-white/15 text-white hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-white lg:flex">
-            <ChevronsRight className="h-5 w-5" />
-          </button>
-        )}
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold leading-tight tracking-tight text-white xl:text-2xl">
             {pageInfo.title}
